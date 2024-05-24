@@ -1,0 +1,62 @@
+parameters:
+- name: targetedStage
+  displayName: "Which Environment?"
+  type: string
+  default: Development
+  values:
+  - Development
+  - QA
+  - Stage
+  - Production
+
+trigger: 'none'
+
+variables:
+- name: targetedStageVar
+  value: ${{ parameters.targetedStage }}
+
+name: $(date:yyyyMMdd)$(rev:.r)
+
+pool:
+ name: agent-name
+
+stages:
+- ${{ if eq(variables['targetedStageVar'], 'Development') }}:
+  - template: secret-rotation-template.yaml
+    parameters:
+      variableGroup: variable-group-name #enter variable group name that you need to push to AKV
+      stageName: 'devSecretRotation'
+      adoEnvironment: 'DEV'
+      stageDisplayName: 'Secret Rotation on Dev'
+      vaultName: 'name-of-keyvault' #enter the name of the keyvault in which you want to add/update secrets
+      serviceConnectionName: 'name-of-akv-svc' #enter the name of keyvault service connection
+
+- ${{ if eq(variables['targetedStageVar'], 'QA') }}:
+  - template: secret-rotation-template.yaml
+    parameters:
+      variableGroup: variable-group-name #enter variable group name that you need to push to AKV
+      stageName: 'qaSecretRotation'
+      adoEnvironment: 'QA'
+      stageDisplayName: 'Secret Rotation on QA'
+      vaultName: 'name-of-keyvault' #enter the name of the keyvault in which you want to add/update secrets
+      serviceConnectionName: 'name-of-akv-svc' #enter the name of keyvault service connection
+
+- ${{ if eq(variables['targetedStageVar'], 'Stage') }}:
+  - template: secret-rotation-template.yaml
+    parameters:
+      variableGroup: variable-group-name #enter variable group name that you need to push to AKV
+      stageName: 'stageSecretRotation'
+      adoEnvironment: 'STG'
+      stageDisplayName: 'Secret Rotation on Stage'
+      vaultName: 'name-of-keyvault' #enter the name of the keyvault in which you want to add/update secrets
+      serviceConnectionName: 'name-of-akv-svc' #enter the name of keyvault service connection
+
+- ${{ if eq(variables['targetedStageVar'], 'Production') }}:
+  - template: secret-rotation-template.yaml
+    parameters:
+      variableGroup: variable-group-name #enter variable group name that you need to push to AKV
+      stageName: 'prodSecretRotation'
+      adoEnvironment: 'PROD'
+      stageDisplayName: 'Secret Rotation on Production'
+      vaultName: 'name-of-keyvault' #enter the name of the keyvault in which you want to add/update secrets
+      serviceConnectionName: 'name-of-akv-svc' #enter the name of keyvault service connection
